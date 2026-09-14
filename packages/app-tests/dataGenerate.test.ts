@@ -451,10 +451,12 @@ test("formats generated values for MySQL JSON columns as JSON literals", () => {
 test("JSON-encodes generated strings for json columns but not for varchar", () => {
   // Plain prose lands as a JSON string scalar (still a SQL string, so valid).
   assert.equal(formatGeneratedValue("plain", "mysql", "json"), `'"plain"'`);
-  // Embedded double quotes are JSON-escaped.
-  assert.equal(formatGeneratedValue('say "hi"', "mysql", "json"), `'"say \\"hi\\""'`);
-  // Values that are already valid JSON pass through untouched.
+  // Embedded double quotes are JSON-escaped; MySQL's lexer consumes '\' escapes
+  // inside '...' literals, so backslashes double to survive the roundtrip.
+  assert.equal(formatGeneratedValue('say "hi"', "mysql", "json"), `'"say \\\\"hi\\\\""'`);
+  // Already-valid JSON passes through with the same backslash doubling.
   assert.equal(formatGeneratedValue('{"a":1}', "mysql", "json"), `'{"a":1}'`);
+  assert.equal(formatGeneratedValue('{"a":"b\\"c"}', "mysql", "json"), `'{"a":"b\\\\"c"}'`);
   // Non-JSON columns keep plain string quoting.
   assert.equal(formatGeneratedValue("plain", "mysql", "varchar(16)"), `'plain'`);
 });

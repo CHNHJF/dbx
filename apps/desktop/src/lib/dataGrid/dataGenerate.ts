@@ -1762,7 +1762,11 @@ export function formatGeneratedValue(value: unknown, databaseType?: DatabaseType
     // MySQL (and MariaDB) reject any non-JSON text in a JSON column, so free
     // text from a string generator must land as a JSON string scalar; values
     // that are already valid JSON pass through untouched.
-    if (!isWellFormedJson(stringValue)) return quoteGeneratedString(JSON.stringify(stringValue));
+    const jsonText = isWellFormedJson(stringValue) ? stringValue : JSON.stringify(stringValue);
+    // MySQL's lexer consumes backslash escapes inside '...' literals, so the
+    // JSON escape sequences must double their backslashes to survive the trip.
+    if (databaseType === "mysql") return quoteGeneratedString(jsonText.replace(/\\/g, "\\\\"));
+    return quoteGeneratedString(jsonText);
   }
   return quoteGeneratedString(stringValue);
 }
