@@ -2,7 +2,7 @@
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { translateBackendError } from "@/i18n/backend-errors";
-import { Upload, Download, ArrowDownUp, FolderPlus, FolderOpen, RefreshCw, ChevronsLeft, ChevronsDownUp, Trash2, FolderInput, Minus, Square, SquareCheck, Unplug, X } from "@lucide/vue";
+import { Upload, Download, ArrowDownUp, FolderPlus, FolderOpen, RefreshCw, ChevronsLeft, ChevronsDownUp, Trash2, FolderInput, Square, SquareDot, SquareCheck, Unplug, X } from "@lucide/vue";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -66,7 +66,7 @@ const selectedConnectionIds = computed(() => (connectionStore.connectionMultiSel
 const selectedConnectionCount = computed(() => selectedConnectionIds.value.length);
 const showConnectionMultiSelectToolbar = computed(() => connectionStore.connectionMultiSelectActive && selectedConnectionCount.value > 0);
 const allConnectionsSelected = computed(() => allConnectionIds.value.length > 0 && selectedConnectionCount.value === allConnectionIds.value.length);
-const selectAllIcon = computed(() => (allConnectionsSelected.value ? SquareCheck : selectedConnectionCount.value > 0 ? Minus : Square));
+const selectAllIcon = computed(() => (allConnectionsSelected.value ? SquareCheck : selectedConnectionCount.value > 0 ? SquareDot : Square));
 const selectAllLabel = computed(() => (allConnectionsSelected.value ? t("connectionGroup.deselectAllConnections") : t("connectionGroup.selectAllConnections")));
 const moveGroupItems = computed(() => [
   ...connectionGroupDestinationRows(connectionStore.sidebarLayout).map((group) => ({
