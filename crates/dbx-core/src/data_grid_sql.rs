@@ -1797,7 +1797,11 @@ fn push_mysql_delete_batches(statements: &mut Vec<String>, prefix: &str, predica
 
     fn flush_in(run: &mut InRun, batches: &mut Vec<String>) {
         if let Some(column) = run.column.take() {
-            batches.push(format!("{column} IN ({})", run.values.join(IN_JOINER)));
+            if run.values.len() == 1 {
+                batches.push(format!("{column} = {}", run.values[0]));
+            } else {
+                batches.push(format!("{column} IN ({})", run.values.join(IN_JOINER)));
+            }
             run.values.clear();
             run.bytes = 0;
         }
@@ -6733,7 +6737,7 @@ mod tests {
         });
 
         assert_eq!(result.validation_error, None);
-        assert_eq!(result.statements, vec!["DELETE FROM `lims`.`lims_batchs_simple` WHERE `id` IN (2658055);"]);
+        assert_eq!(result.statements, vec!["DELETE FROM `lims`.`lims_batchs_simple` WHERE `id` = 2658055;"]);
     }
 
     #[test]
