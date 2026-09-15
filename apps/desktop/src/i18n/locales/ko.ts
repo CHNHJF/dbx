@@ -1320,6 +1320,7 @@ export default withEnglishFallback({
     pluginSshKeyPickerPlaceholder: "로컬 SSH 키 선택…",
     pluginSshKeyPickerEmpty: "키를 찾을 수 없음",
     pluginSshKeyEncrypted: "암호화됨",
+    objectCacheRefreshFailed: "개체 캐시 새로 고침 실패: {message}",
   },
   editor: {
     duckdbDraining: "이전 DuckDB 쿼리가 아직 중지 중입니다. 잠시 후 다시 시도해 주세요.",
@@ -6860,6 +6861,7 @@ export default withEnglishFallback({
     shortcutSearchPlaceholder: "단축키 검색",
     shortcutSearchNoResults: "검색과 일치하는 단축키가 없습니다.",
     shortcutConflict: "이 단축키는 같은 범위의 다른 작업과 충돌합니다.",
+    shortcutReserved: "이 단축키는 시스템에서 예약되었습니다.",
     shortcutClear: "단축키 지우기",
     preview: "실시간 미리보기",
     previewSyntaxErrorHint: "미리보기는 읽기 전용입니다. 데모 SQL의 FOM 오타는 의도적인 구문 오류이며 오류 강조 표시를 보여줍니다.",

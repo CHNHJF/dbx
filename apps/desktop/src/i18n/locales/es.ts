@@ -1403,6 +1403,7 @@ export default withEnglishFallback({
     pluginSshKeyPickerPlaceholder: "Seleccionar clave SSH local…",
     pluginSshKeyPickerEmpty: "No se encontraron claves",
     pluginSshKeyEncrypted: "Cifrado",
+    objectCacheRefreshFailed: "Error al actualizar la caché de objetos: {message}",
   },
   editor: {
     duckdbDraining: "La consulta anterior de DuckDB aún se está deteniendo. Vuelva a intentarlo en breve.",
@@ -7089,6 +7090,7 @@ export default withEnglishFallback({
     shortcutSearchPlaceholder: "Buscar atajos",
     shortcutSearchNoResults: "Ningún atajo coincide con la búsqueda.",
     shortcutConflict: "Este atajo entra en conflicto con otra acción del mismo ámbito.",
+    shortcutReserved: "Este atajo está reservado por el sistema.",
     shortcutClear: "Borrar atajo",
     preview: "Vista previa en tiempo real",
     previewSyntaxErrorHint: "Vista previa de solo lectura. El error FOM en el SQL de ejemplo es intencionado y demuestra el resaltado de errores de sintaxis.",

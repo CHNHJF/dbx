@@ -1422,6 +1422,7 @@ export default withEnglishFallback({
     pluginSshKeyPickerPlaceholder: "ローカルの SSH キーを選択…",
     pluginSshKeyPickerEmpty: "キーが見つかりません",
     pluginSshKeyEncrypted: "暗号化済み",
+    objectCacheRefreshFailed: "オブジェクトキャッシュの更新に失敗しました：{message}",
   },
   editor: {
     duckdbDraining: "前回の DuckDB クエリはまだ停止処理中です。しばらくしてから再試行してください。",
@@ -7095,6 +7096,7 @@ export default withEnglishFallback({
     shortcutSearchPlaceholder: "ショートカットを検索",
     shortcutSearchNoResults: "一致するショートカットはありません。",
     shortcutConflict: "このショートカットは同じスコープ内の別のアクションと競合しています。",
+    shortcutReserved: "このショートカットはシステムで予約されています。",
     shortcutClear: "ショートカットをクリア",
     preview: "ライブプレビュー",
     previewSyntaxErrorHint: "プレビューは読み取り専用です。デモ SQL 内の FOM は意図的な構文エラーで、エラーのハイライトを示しています。",

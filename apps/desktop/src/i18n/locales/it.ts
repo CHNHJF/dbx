@@ -1401,6 +1401,7 @@ export default withEnglishFallback({
     pluginSshKeyPickerPlaceholder: "Seleziona chiave SSH locale…",
     pluginSshKeyPickerEmpty: "Nessuna chiave trovata",
     pluginSshKeyEncrypted: "Crittografata",
+    objectCacheRefreshFailed: "Aggiornamento della cache degli oggetti non riuscito: {message}",
   },
   editor: {
     duckdbDraining: "La query DuckDB precedente è ancora in fase di arresto. Riprova a breve.",
@@ -7089,6 +7090,7 @@ export default withEnglishFallback({
     shortcutSearchPlaceholder: "Cerca scorciatoie",
     shortcutSearchNoResults: "Nessuna scorciatoia corrisponde alla ricerca.",
     shortcutConflict: "Questa scorciatoia è in conflitto con un'altra azione nello stesso ambito.",
+    shortcutReserved: "Questa scorciatoia è riservata dal sistema.",
     shortcutClear: "Cancella scorciatoia",
     preview: "Anteprima in tempo reale",
     previewSyntaxErrorHint: "Anteprima di sola lettura. L'errore FOM nell'SQL di esempio è intenzionale e mostra l'evidenziazione degli errori di sintassi.",
