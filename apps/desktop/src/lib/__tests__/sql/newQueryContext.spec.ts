@@ -204,12 +204,13 @@ describe("buildSelectAllSql", () => {
     expect(buildSelectAllSql("mysql", { database: "mydb", tableName: "users" }, undefined, undefined, true)).toBe("SELECT * FROM `mydb`.`users`");
   });
 
-  it("qualifies and quotes a PostgreSQL table with its schema", () => {
-    expect(buildSelectAllSql("postgres", { schema: "public", tableName: "users" })).toBe('SELECT * FROM "public"."users"');
+  it("omits the PostgreSQL schema qualifier by default; including it is opt-in (#9110)", () => {
+    expect(buildSelectAllSql("postgres", { schema: "public", tableName: "users" })).toBe('SELECT * FROM "users"');
+    expect(buildSelectAllSql("postgres", { schema: "public", tableName: "users" }, undefined, undefined, true)).toBe('SELECT * FROM "public"."users"');
   });
 
-  it("can omit identifier quotes while preserving schema qualification", () => {
-    expect(buildSelectAllSql("postgres", { schema: "public", tableName: "users" }, undefined, undefined, false, false)).toBe("SELECT * FROM public.users");
+  it("can omit identifier quotes for a PostgreSQL table", () => {
+    expect(buildSelectAllSql("postgres", { schema: "public", tableName: "users" }, undefined, undefined, true, false)).toBe("SELECT * FROM public.users");
   });
 
   it("preserves the Phoenix schema for new-query prefill", () => {
@@ -249,7 +250,7 @@ describe("buildSelectAllSql", () => {
     expect(buildSelectAllSql("kingbase", { schema: "audit_schema", tableName: "events" }, '"')).toBe('SELECT * FROM "audit_schema"."events"');
   });
   it("falls back to double quotes for Kingbase when no identifier quote is reported", () => {
-    expect(buildSelectAllSql("kingbase", { schema: "audit_schema", tableName: "events" })).toBe('SELECT * FROM "audit_schema"."events"');
+    expect(buildSelectAllSql("kingbase", { schema: "audit_schema", tableName: "events" }, undefined, undefined, true)).toBe('SELECT * FROM "audit_schema"."events"');
   });
 });
 
@@ -272,7 +273,7 @@ describe("isNewQueryPrefillSupported", () => {
 });
 
 describe("resolveNewQueryInitialSql", () => {
-  it("prefills SQL from the active table when enabled", () => {
+  it("prefills bare table SQL from the active table by default; the database name is opt-in", () => {
     expect(
       resolveNewQueryInitialSql({
         activeTab: dataTab(),
@@ -280,6 +281,16 @@ describe("resolveNewQueryInitialSql", () => {
         targetConnectionId: "conn-1",
         targetDatabase: "app_db",
         databaseType: "postgres",
+      }),
+    ).toBe('SELECT * FROM "users"');
+    expect(
+      resolveNewQueryInitialSql({
+        activeTab: dataTab(),
+        prefillEnabled: true,
+        targetConnectionId: "conn-1",
+        targetDatabase: "app_db",
+        databaseType: "postgres",
+        includeDatabaseName: true,
       }),
     ).toBe('SELECT * FROM "public"."users"');
   });
@@ -292,6 +303,7 @@ describe("resolveNewQueryInitialSql", () => {
         targetConnectionId: "conn-1",
         targetDatabase: "app_db",
         databaseType: "postgres",
+        includeDatabaseName: true,
         quoteIdentifiers: false,
       }),
     ).toBe("SELECT * FROM public.users");
