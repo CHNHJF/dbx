@@ -1214,10 +1214,11 @@ pub fn build_export_insert_statements(options: BuildExportInsertStatementsOption
     // Dameng and SQL Server both reject explicit values for identity columns
     // unless `SET IDENTITY_INSERT <table> ON` wraps the statement (SQL Server
     // error 544), so exported INSERTs must carry the wrapper.
-    let needs_identity_insert_wrapper = matches!(options.database_type, Some(DatabaseType::Dameng) | Some(DatabaseType::SqlServer))
-        && insert_columns.iter().any(|(index, _, _)| {
-            is_identity_column_extra(options.column_extras.get(*index).and_then(|value| value.as_deref()))
-        });
+    let needs_identity_insert_wrapper =
+        matches!(options.database_type, Some(DatabaseType::Dameng) | Some(DatabaseType::SqlServer))
+            && insert_columns.iter().any(|(index, _, _)| {
+                is_identity_column_extra(options.column_extras.get(*index).and_then(|value| value.as_deref()))
+            });
 
     let statement_prefix = format!("INSERT INTO {table} ({columns}) VALUES ");
     let statement_overhead_bytes = export_sql_statement_bytes(options.database_type, &statement_prefix) + 1;
