@@ -13,11 +13,7 @@ function col(overrides: Partial<ColumnInfo> & { name: string; data_type: string 
   };
 }
 
-const columns: ColumnInfo[] = [
-  col({ name: "id", data_type: "integer", is_primary_key: true, extra: "auto_increment" }),
-  col({ name: "name", data_type: "varchar" }),
-  col({ name: "created_at", data_type: "timestamp" }),
-];
+const columns: ColumnInfo[] = [col({ name: "id", data_type: "integer", is_primary_key: true, extra: "auto_increment" }), col({ name: "name", data_type: "varchar" }), col({ name: "created_at", data_type: "timestamp" })];
 
 test("builds SELECT template with explicit table columns", () => {
   assert.equal(
@@ -87,10 +83,7 @@ test("builds GaussDB M templates with the detected backtick identifier mode", ()
     identifierQuote: "`",
     schema: "app_schema",
     tableName: "order",
-    columns: [
-      col({ name: "id", data_type: "integer", is_primary_key: true }),
-      col({ name: "DisplayName", data_type: "varchar" }),
-    ],
+    columns: [col({ name: "id", data_type: "integer", is_primary_key: true }), col({ name: "DisplayName", data_type: "varchar" })],
   };
 
   assert.equal(buildTableSelectTemplate(options), "SELECT id, `DisplayName`\nFROM app_schema.`order`;");
@@ -128,6 +121,20 @@ test("respects includeDatabaseName=false for schema-aware engines (#9110)", () =
     columns: [{ name: "ID" }],
   } as Parameters<typeof buildTableSelectTemplate>[0]);
   assert.equal(sql, "SELECT ID\nFROM AQ$_INTERNET_AGENTS;");
+});
+
+test("respects includeDatabaseName=false on quoted-identifier connections (#9110)", () => {
+  // The identifierQuote early-return paths (JDBC/agent connections) must
+  // honor the toggle too, not just the native schema-aware branch.
+  const base = {
+    databaseType: "postgres" as const,
+    identifierQuote: '"',
+    schema: "public",
+    tableName: "Users",
+    columns,
+  };
+  assert.equal(buildTableSelectTemplate(base), 'SELECT id, name, created_at\nFROM public."Users";');
+  assert.equal(buildTableSelectTemplate({ ...base, includeDatabaseName: false }), 'SELECT id, name, created_at\nFROM "Users";');
 });
 
 test("keeps the schema qualifier for databases that require it and the default (both settings on)", () => {
