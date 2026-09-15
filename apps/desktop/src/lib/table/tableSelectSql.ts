@@ -39,6 +39,12 @@ export interface BuildTableSelectSqlOptions {
 
 const DATABASE_QUALIFIED_TABLE_TYPES = new Set<DatabaseType>(["mysql", "clickhouse", "doris", "starrocks", "goldendb"]);
 
+// Engines that can only address an object through its full qualified name
+// (`catalog.schema.table` / `database.schema.table`): dropping the schema
+// qualifier would break the query, so `includeDatabaseName === false` must
+// not strip it.
+const DATABASE_SCHEMA_QUALIFIED_TABLE_TYPES = new Set<DatabaseType>(["sqlserver", "trino", "prestosql"]);
+
 function sqlStatementSpans(sql: string, dialectId: string): Array<{ start: number; end: number }> {
   const spans: Array<{ start: number; end: number }> = [];
   let start = 0;
@@ -232,6 +238,13 @@ export function qualifiedTableName(options: Pick<BuildTableSelectSqlOptions, "da
       if (linked) {
         return quoteIdentifiers === false ? [linked.server, linked.catalog, linked.schema, tableName].map((name) => quoteTableIdentifierIfNeeded(databaseType, name)).join(".") : sqlServerLinkedTableName(linked, tableName);
       }
+    }
+    // The schema qualifier is the "database name" on schema-aware engines
+    // (Oracle's SYSTEM, PG's public, ...). Databases that can only address
+    // objects through a 3-part name keep it unconditionally — their queries
+    // would not resolve without it.
+    if (includeDatabaseName === false && databaseType !== undefined && !DATABASE_SCHEMA_QUALIFIED_TABLE_TYPES.has(databaseType)) {
+      return quoteTable(tableName);
     }
     return `${quoteTable(schema)}.${quoteTable(tableName)}`;
   }

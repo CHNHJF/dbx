@@ -114,3 +114,45 @@ test("preserves the Phoenix schema in all SQL templates", () => {
   assert.equal(buildTableUpdateTemplate(options), `UPDATE "APP"."USERS"\nSET "NAME" = 'NAME_value'\nWHERE "ID" = 0;`);
   assert.equal(buildTableDeleteTemplate(options), `DELETE FROM "APP"."USERS"\nWHERE "ID" = 0;`);
 });
+
+test("respects includeDatabaseName=false for schema-aware engines (#9110)", () => {
+  // Oracle's schema qualifier is the "database name" on schema-aware engines;
+  // turning the setting off must drop it, not just on MySQL-style engines.
+  const sql = buildTableSelectTemplate({
+    databaseType: "oracle",
+    identifierQuote: `"`,
+    schema: "SYSTEM",
+    includeDatabaseName: false,
+    quoteIdentifiers: false,
+    tableName: "AQ$_INTERNET_AGENTS",
+    columns: [{ name: "ID" }],
+  } as Parameters<typeof buildTableSelectTemplate>[0]);
+  assert.equal(sql, "SELECT ID\nFROM AQ$_INTERNET_AGENTS;");
+});
+
+test("keeps the schema qualifier for databases that require it and the default (both settings on)", () => {
+  // Default settings: schema stays.
+  const defaultSql = buildTableSelectTemplate({
+    databaseType: "oracle",
+    identifierQuote: `"`,
+    schema: "SYSTEM",
+    includeDatabaseName: true,
+    quoteIdentifiers: true,
+    tableName: "T1",
+    columns: [{ name: "ID" }],
+  } as Parameters<typeof buildTableSelectTemplate>[0]);
+  assert.equal(defaultSql, 'SELECT "ID"\nFROM "SYSTEM"."T1";');
+});
+
+test("quoteIdentifiers=false emits bare column names in SELECT templates", () => {
+  const sql = buildTableSelectTemplate({
+    databaseType: "mysql",
+    schema: undefined,
+    database: "shopdb",
+    includeDatabaseName: true,
+    quoteIdentifiers: false,
+    tableName: "orders",
+    columns: [{ name: "id" }, { name: "amount" }],
+  } as Parameters<typeof buildTableSelectTemplate>[0]);
+  assert.equal(sql, "SELECT id, amount\nFROM shopdb.orders;");
+});
