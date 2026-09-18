@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, defineComponent, h, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { BadgeCheck, Check, ChevronRight, CircleAlert, Download, ExternalLink, FileUp, FolderTree, Globe, Info, LayoutGrid, Link2, List, Loader2, PackageCheck, Pencil, Plus, RefreshCw, RotateCcw, Search, Settings2, ShieldCheck, Store, Trash2 } from "@lucide/vue";
+import { BadgeCheck, Check, ChevronRight, CircleAlert, Download, ExternalLink, FileUp, FolderTree, Globe, Info, LayoutGrid, Link2, List, Loader2, PackageCheck, Pencil, Pin, PinOff, Plus, RefreshCw, RotateCcw, Search, Settings2, ShieldCheck, Store, Trash2 } from "@lucide/vue";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import { useToast } from "@/composables/useToast";
 import PluginIcon from "@/components/plugins/PluginIcon.vue";
 import * as api from "@/lib/backend/api";
 import { clearPluginIconCache } from "@/lib/plugins/pluginIconResolver";
+import { loadPinnedPluginIds, savePinnedPluginIds, sortPluginsPinnedFirst } from "@/lib/plugins/pluginPinning";
 import { isTauriRuntime } from "@/lib/backend/tauriRuntime";
 import { physicalDropPositionInsideRect } from "@/lib/ai/aiAttachments";
 import { createFrontendPluginRegistry, pluginConnectionProviderIcon } from "@/lib/plugins/frontendPlugin";
@@ -106,7 +107,13 @@ const batchRunning = ref(false);
 const mutationRunning = computed(() => batchRunning.value || !!marketplaceInstallingKey.value || installing.value || urlInstalling.value || operating.value);
 
 const registry = computed(() => createFrontendPluginRegistry(installedPlugins.value, appLocale.value));
-const definitions = computed(() => registry.value.listPlugins());
+const pinnedPluginIds = ref<string[]>(loadPinnedPluginIds());
+const definitions = computed(() => sortPluginsPinnedFirst(registry.value.listPlugins(), pinnedPluginIds.value));
+const isPluginPinned = (pluginId: string) => pinnedPluginIds.value.includes(pluginId);
+const togglePluginPinned = (pluginId: string) => {
+  pinnedPluginIds.value = isPluginPinned(pluginId) ? pinnedPluginIds.value.filter((id) => id !== pluginId) : [...pinnedPluginIds.value, pluginId];
+  savePinnedPluginIds(pinnedPluginIds.value);
+};
 const connectionProviders = computed(() => registry.value.listConnectionProviders());
 const selectedEntry = computed(() => connectionProviders.value.find((entry) => entry.plugin.manifest.id === selectedPluginId.value && entry.contribution.id === selectedContributionId.value) || null);
 const selectedDefinition = computed(() => definitions.value.find((definition) => definition.plugin.manifest.id === selectedPluginId.value) || null);
@@ -988,7 +995,7 @@ onBeforeUnmount(() => {
                 v-for="definition in definitions"
                 :key="definition.plugin.manifest.id"
                 type="button"
-                class="flex w-full items-start gap-2 rounded-md px-2 py-2 text-left hover:bg-muted"
+                class="group/plugin-row flex w-full items-start gap-2 rounded-md px-2 py-2 text-left hover:bg-muted"
                 :class="batchMode ? (isInstalledSelected(definition.plugin.manifest.id) ? 'bg-muted ring-1 ring-primary/30' : '') : selectedPluginId === definition.plugin.manifest.id ? 'bg-muted ring-1 ring-primary/30' : ''"
                 :disabled="batchMode && batchRunning"
                 @click="batchMode ? toggleInstalledSelection(definition.plugin.manifest.id) : selectPlugin(definition.plugin.manifest.id)"
@@ -1008,6 +1015,22 @@ onBeforeUnmount(() => {
                     <Badge :variant="definition.plugin.compatibility.compatible ? 'secondary' : 'destructive'" class="h-4 px-1.5 text-[10px]">{{ definition.plugin.compatibility.compatible ? t("pluginPlatform.compatible") : t("pluginPlatform.blocked") }}</Badge>
                   </span>
                 </span>
+                <span
+                  v-if="!batchMode"
+                  class="mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                  :class="isPluginPinned(definition.plugin.manifest.id) ? 'text-primary' : 'opacity-0 group-hover/plugin-row:opacity-100 focus-visible:opacity-100'"
+                  role="button"
+                  tabindex="0"
+                  :aria-pressed="isPluginPinned(definition.plugin.manifest.id)"
+                  :title="isPluginPinned(definition.plugin.manifest.id) ? t('pluginPlatform.unpinPlugin') : t('pluginPlatform.pinPlugin')"
+                  @click.stop="togglePluginPinned(definition.plugin.manifest.id)"
+                  @keydown.enter.prevent="togglePluginPinned(definition.plugin.manifest.id)"
+                  @keydown.space.prevent="togglePluginPinned(definition.plugin.manifest.id)"
+                >
+                  <Pin v-if="isPluginPinned(definition.plugin.manifest.id)" class="size-3.5" />
+                  <PinOff v-else class="size-3.5" />
+                </span>
+                <span v-else class="mt-0.5 size-6 shrink-0" aria-hidden="true" />
               </button>
             </div>
 
