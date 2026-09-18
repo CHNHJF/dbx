@@ -1010,6 +1010,7 @@ const { setupTauriListeners, cleanupTauriListeners } = useTauriEvents({
   closeActiveSurface,
   openAiConfigDeepLink,
   openPluginInstallDeepLink,
+  refreshPluginWorkbenches,
 });
 const { showCloseActionPrompt, chooseQuit, chooseMinimize, cancelCloseActionPrompt, performCloseAction, setupCloseActionPromptListener, cleanupCloseActionPromptListener } = useCloseActionPrompt({ requestClose: requestAppClose });
 useVisibilityChange();
@@ -3284,6 +3285,17 @@ function refreshActivePluginWorkbench(): boolean {
   if (!pluginWorkbench) return false;
   void pluginWorkbench.refresh();
   return true;
+}
+
+// Installs/rollbacks replace the plugin runtime in place; already-open
+// workbench tabs keep rendering the previous UI bundle until they reload.
+// refresh() re-fetches listPlugins, and PluginWorkbenchHost's version watch
+// rebuilds the sandbox iframe from the new package.
+function refreshPluginWorkbenches(pluginId: string): void {
+  for (const tab of mountedPluginWorkbenchTabs.value) {
+    if (tab.pluginWorkbench?.pluginId !== pluginId) continue;
+    pluginWorkbenchTabRefs.get(tab.id)?.refresh();
+  }
 }
 
 async function closeActiveSurface() {
