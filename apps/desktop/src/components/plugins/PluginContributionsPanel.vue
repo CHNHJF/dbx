@@ -34,6 +34,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   newConnection: [pluginId: string, providerId: string];
+  pluginRuntimeReplaced: [pluginId: string];
 }>();
 
 // lucide no longer ships brand icons; mirror the inline glyph used in AppToolbar.
@@ -185,12 +186,17 @@ function applyFocusTarget(focus: PluginCenterFocus) {
   selectProvider(focus.pluginId, provider.contribution.id);
 }
 
+function notifyPluginRuntimeReplaced(pluginId: string) {
+  if (!isTauriRuntime()) emit("pluginRuntimeReplaced", pluginId);
+}
+
 async function installListing(listing: MarketplacePluginListing): Promise<PluginInstallResult> {
   const result = await api.installMarketplacePlugin({
     repositoryId: listing.repository.id,
     pluginId: listing.plugin.id,
     version: listing.plugin.latestVersion,
   });
+  notifyPluginRuntimeReplaced(result.plugin.manifest.id);
   beaconPluginInstall(listing.plugin.id, listing.plugin.latestVersion);
   return result;
 }
@@ -511,6 +517,7 @@ function reportInstallBeacon(result: PluginInstallResult) {
 }
 
 async function finishInstall(result: PluginInstallResult) {
+  notifyPluginRuntimeReplaced(result.plugin.manifest.id);
   reportInstallBeacon(result);
   toast(t("pluginPlatform.installSuccess", { name: result.plugin.manifest.name, version: result.plugin.manifest.version }));
   clearPluginIconCache();
@@ -657,6 +664,7 @@ async function rollbackSelectedPlugin() {
   operating.value = true;
   try {
     const result = await api.rollbackPlugin(selectedPluginId.value);
+    notifyPluginRuntimeReplaced(result.plugin.manifest.id);
     toast(t("pluginPlatform.rollbackSuccess", { version: result.plugin.manifest.version }));
     clearPluginIconCache();
     installedPlugins.value = await api.listPlugins();
