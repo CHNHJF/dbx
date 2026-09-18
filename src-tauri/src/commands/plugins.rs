@@ -248,6 +248,7 @@ pub async fn rollback_plugin(
     .await
     .map_err(|error| error.to_string())??;
     stop_replaced_plugin_runtime(&state, &result.plugin).await;
+    emit_plugin_runtime_replaced(&app, &result.plugin);
     Ok(result.response())
 }
 
