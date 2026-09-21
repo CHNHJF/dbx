@@ -1526,8 +1526,19 @@ const selectedDatabaseLabel = computed(() => {
   // switch), so before it arrives the selection is still valid — fall back to
   // the raw database names instead of the "select database" placeholder,
   // which made the button look unselected while the dropdown showed a check.
+  // Format with the same helper as the option labels so the text stays
+  // identical once the options load (e.g. Redis "db0", localized defaults).
   const raw = [...selectedDatabaseValues.value];
-  if (raw.length) return raw.join(", ");
+  if (raw.length) {
+    return raw
+      .map((database) =>
+        formatDatabaseLabel(props.connection, database, {
+          defaultDatabase: t("editor.defaultDatabase"),
+          noDatabase: t("editor.noDatabase"),
+        }),
+      )
+      .join(", ");
+  }
   return t("editor.selectDatabase");
 });
 
